@@ -26,22 +26,46 @@ interface ProcessedMarketPrice {
   yoy: number;
 }
 
+// Type for landings API response
+interface LandingsApiItem {
+  year: number;
+  region: string;
+  nmfs_name: string;
+  pounds: number;
+  dollars: number;
+  metric_tons: number;
+}
+
+// Type for processed landings data
+interface ProcessedLanding {
+  species: string;
+  volume: string;
+  avgPrice: string;
+  port: string;
+  date: string;
+}
+
 export default function Home() {
   const [marketPrices, setMarketPrices] = useState<ProcessedMarketPrice[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const [landings, setLandings] = useState<ProcessedLanding[]>([]);
+  const [loadingMarket, setLoadingMarket] = useState<boolean>(true);
+  const [loadingLandings, setLoadingLandings] = useState<boolean>(true);
+  const [marketError, setMarketError] = useState<string | null>(null);
+  const [landingsError, setLandingsError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchMarketPrices = async () => {
       try {
-        setLoading(true);
-        const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}`);
+        setLoadingMarket(true);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_MARKET_PRICES}`
+        );
 
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        const data: MarketPriceApiItem[] = await response.json(); // Process the new data format directly
+        const data: MarketPriceApiItem[] = await response.json();
 
         const processedData: ProcessedMarketPrice[] = data.map(
           (item: MarketPriceApiItem): ProcessedMarketPrice => {
@@ -56,18 +80,76 @@ export default function Home() {
         );
 
         setMarketPrices(processedData);
-        setError(null);
+        setMarketError(null);
       } catch (err: unknown) {
         console.error("Error fetching market prices:", err);
-        setError(
+        setMarketError(
           err instanceof Error ? err.message : "An unknown error occurred"
         );
       } finally {
-        setLoading(false);
+        setLoadingMarket(false);
       }
     };
 
     fetchMarketPrices();
+  }, []);
+
+  useEffect(() => {
+    const fetchLandings = async () => {
+      try {
+        setLoadingLandings(true);
+        const response = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data: LandingsApiItem[] = await response.json();
+
+        const processedData: ProcessedLanding[] = data.map(
+          (item: LandingsApiItem): ProcessedLanding => {
+            // Calculate average price per pound
+            const avgPricePerPound =
+              item.pounds > 0 ? item.dollars / item.pounds : 0;
+
+            // Format species name (remove "CRAB, " prefix etc for cleaner display)
+            const speciesName = item.nmfs_name
+              .replace(/\*\*/g, "") // Add this line to remove all ** symbols
+              .split(", ")
+              .reverse()
+              .join(" ")
+              .toLowerCase()
+              .split(" ")
+              .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+              .join(" ");
+
+            const displayDate = `${item.year}`;
+
+            return {
+              species: speciesName,
+              volume: item.metric_tons.toLocaleString(),
+              avgPrice: `$${avgPricePerPound.toFixed(2)}`,
+              port: item.region,
+              date: displayDate,
+            };
+          }
+        );
+
+        setLandings(processedData);
+        setLandingsError(null);
+      } catch (err: unknown) {
+        console.error("Error fetching landings:", err);
+        setLandingsError(
+          err instanceof Error ? err.message : "An unknown error occurred"
+        );
+      } finally {
+        setLoadingLandings(false);
+      }
+    };
+
+    fetchLandings();
   }, []);
 
   const formatTrend = (value: number): string => {
@@ -242,24 +324,24 @@ export default function Home() {
               </div>
 
               {/* Loading State */}
-              {loading && (
+              {loadingMarket && (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-gray-500">Loading market prices...</div>
                 </div>
               )}
 
               {/* Error State */}
-              {error && (
+              {marketError && (
                 <div className="flex items-center justify-center py-8">
                   <div className="text-red-500">
-                    Error loading data: {error}
+                    Error loading data: {marketError}
                   </div>
                 </div>
               )}
 
               {/* Data Table */}
-              {!loading && !error && (
-                <div className="overflow-x-auto  mb-4 ">
+              {!loadingMarket && !marketError && (
+                <div className="overflow-x-auto mb-4">
                   <div className="min-w-max min-h-max">
                     {/* Table Header */}
                     <div className="grid grid-cols-5 gap-4 pb-2 mb-3 border-b border-gray-200 text-sm font-semibold text-gray-600 text-center">
@@ -315,6 +397,7 @@ export default function Home() {
                 </div>
               )}
             </div>
+
             {/* Right Column */}
             <div className="space-y-4 hidden md:block">
               {/* Global Snapshot */}
@@ -362,7 +445,7 @@ export default function Home() {
             </div>
 
             {/* Auctions & Landings */}
-            <div className="col-span-3 md:col-span-2 mb-6 border-1 p-3 rounded-md shadow-sm bg-white  ">
+            <div className="col-span-3 md:col-span-2 mb-6 border-1 p-3 rounded-md shadow-sm bg-white">
               <div className="flex items-center gap-2 mb-4">
                 <FaArrowTrendUp />
                 <h3 className="text-sm font-medium text-gray-900">
@@ -370,88 +453,65 @@ export default function Home() {
                 </h3>
               </div>
 
-              {/* Scrollable Table Container */}
-              <div className="overflow-x-auto  mb-4 ">
-                <div className="min-w-max min-h-max">
-                  {/* Table Header */}
-                  <div className="grid grid-cols-5 gap-4 pb-2 mb-3 border-b border-gray-200 text-sm font-semibold text-gray-600 text-center">
-                    <div>Species</div>
-                    <div>Volume (MT)</div>
-                    <div>Avg Price</div>
-                    <div>Port/Auction</div>
-                    <div>Date</div>
-                  </div>
+              {/* Loading State */}
+              {loadingLandings && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-gray-500">Loading landings data...</div>
+                </div>
+              )}
 
-                  {/* Table Rows */}
-                  <div className="space-y-2 ml-2 max-h-64 overflow-y-auto">
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Blue Crab</div>
-                      <div className="text-gray-700">1,250</div>
-                      <div className="text-gray-700">$12.50</div>
-                      <div className="text-gray-700">Baltimore</div>
-                      <div className="text-gray-700">Sep 5</div>
+              {/* Error State */}
+              {landingsError && (
+                <div className="flex items-center justify-center py-8">
+                  <div className="text-red-500">
+                    Error loading data: {landingsError}
+                  </div>
+                </div>
+              )}
+
+              {/* Scrollable Table Container */}
+              {!loadingLandings && !landingsError && (
+                <div className="overflow-x-auto mb-4">
+                  <div className="min-w-max min-h-max">
+                    {/* Table Header */}
+                    <div className="grid grid-cols-5 gap-4 pb-2 mb-3 border-b border-gray-200 text-sm font-semibold text-gray-600 text-center">
+                      <div>Species</div>
+                      <div>Volume (MT)</div>
+                      <div>Avg Price</div>
+                      <div>Region</div>
+                      <div>Year</div>
                     </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200">
-                      <div className="text-gray-900">Halibut</div>
-                      <div className="text-gray-700">890</div>
-                      <div className="text-gray-700">$24.80</div>
-                      <div className="text-gray-700">Seattle</div>
-                      <div className="text-gray-700">Sep 4</div>
-                    </div>
-                    <div className="grid grid-cols-5 gap-4 py-1 text-sm">
-                      <div className="text-gray-900">Salmon</div>
-                      <div className="text-gray-700">2,150</div>
-                      <div className="text-gray-700">$16.20</div>
-                      <div className="text-gray-700">Anchorage</div>
-                      <div className="text-gray-700">Sep 6</div>
+
+                    {/* Table Rows */}
+                    <div className="space-y-2 ml-2 max-h-64 overflow-y-auto">
+                      {landings.length === 0 ? (
+                        <div className="text-center py-4 text-gray-500">
+                          No landings data available
+                        </div>
+                      ) : (
+                        landings.map(
+                          (item: ProcessedLanding, index: number) => (
+                            <div
+                              key={index}
+                              className="grid grid-cols-5 gap-4 py-1 text-sm border-b border-gray-200"
+                            >
+                              <div className="text-gray-900">
+                                {item.species}
+                              </div>
+                              <div className="text-gray-700">{item.volume}</div>
+                              <div className="text-gray-700">
+                                {item.avgPrice}
+                              </div>
+                              <div className="text-gray-700">{item.port}</div>
+                              <div className="text-gray-700">{item.date}</div>
+                            </div>
+                          )
+                        )
+                      )}
                     </div>
                   </div>
                 </div>
-              </div>
-
-              {/* Navigation */}
+              )}
             </div>
           </div>
         </main>
