@@ -55,39 +55,6 @@ export default function Home() {
               </Button>
             </div>
 
-            {/* Filters */}
-            <div className="mb-6 border-1 p-3 rounded-md shadow-sm bg-white">
-              <h3 className="text-md font-medium text-gray-900 mb-3">
-                Filters
-              </h3>
-              <div className="space-y-1">
-                <Button
-                  variant={"outline"}
-                  className="shadow-md w-full bg-[#ececec] cursor-pointer mb-2"
-                >
-                  Alerts
-                </Button>
-                <Button
-                  variant={"outline"}
-                  className="shadow-md w-full bg-[#ececec] cursor-pointer mb-2"
-                >
-                  Halibut
-                </Button>
-                <Button
-                  variant={"outline"}
-                  className="shadow-md w-full bg-[#ececec] cursor-pointer mb-2"
-                >
-                  Salmon
-                </Button>
-                <Button
-                  variant={"outline"}
-                  className="shadow-md w-full bg-[#ececec] cursor-pointer mb-2"
-                >
-                  Other Species
-                </Button>
-              </div>
-            </div>
-
             {/* Quota Usage */}
             <QuotaUsage />
 
