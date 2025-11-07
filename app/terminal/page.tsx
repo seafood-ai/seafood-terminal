@@ -1,14 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import {
-  Search,
-  User,
-  Menu,
-  TrendingUp,
-  TrendingDown,
-  Circle,
-} from "lucide-react";
+import { Search, User, Menu, Circle } from "lucide-react";
 import SideBarElement from "@/components/custom/SideBarElement";
 import {
   Chart as ChartJS,
@@ -108,42 +101,7 @@ const options: ChartOptions<"candlestick"> = {
 };
 
 const Dashboard = () => {
-  const [sideToggle, setSideToggle] = useState(true);
   const [activeTimeframe, setActiveTimeframe] = useState("1D");
-  const [expandedSections, setExpandedSections] = useState({
-    Data: true,
-    "Environmental Conditions": true,
-    "Consumer Engagement Data": true,
-  });
-
-  // Sample chart data
-  const cpueData = [
-    { date: "Mar 29", cpue: 105, quota: 100 },
-    { date: "Apr 1", cpue: 110, quota: 102 },
-    { date: "Apr 5", cpue: 108, quota: 105 },
-    { date: "Apr 9", cpue: 95, quota: 108 },
-    { date: "Apr 12", cpue: 88, quota: 110 },
-    { date: "Apr 16", cpue: 92, quota: 112 },
-    { date: "Apr 20", cpue: 118, quota: 115 },
-    { date: "Apr 22", cpue: 115, quota: 117 },
-    { date: "Apr 24", cpue: 121.5, quota: 118 },
-  ];
-
-  const smallChartData = [
-    { x: 0, y: 5.48 },
-    { x: 1, y: 5.5 },
-    { x: 2, y: 5.52 },
-    { x: 3, y: 5.48 },
-    { x: 4, y: 5.45 },
-    { x: 5, y: 5.48 },
-  ];
-
-  const toggleSection = (section) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [section]: !prev[section],
-    }));
-  };
 
   return (
     <div className="min-h-screen bg-[#181818] text-white flex">
