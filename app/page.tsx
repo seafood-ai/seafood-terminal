@@ -1,90 +1,45 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { LuBell } from "react-icons/lu";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import Landings from "@/components/custom/Landings";
-import MarketPrices from "@/components/custom/MarketPrices";
-import MarketSignals from "@/components/custom/MarketSignals";
-import QuotaUsage from "@/components/custom/QuotaUsage";
-import GlobalSnapshot from "@/components/custom/GlobalSnapshot";
+import { isAuthenticated } from "../utils/lib/auth";
+import Link from "next/link";
 
 export default function Home() {
   const router = useRouter();
 
-  const handleTerminalClick = () => {
-    router.push("/terminal");
-  };
+  useEffect(() => {
+    if (isAuthenticated()) {
+      router.push("/dashboard");
+    }
+  }, [router]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <header className="px-6 py-3 sticky top-0 bg-gray-100 shadow">
-        <div className="flex items-center justify-center md:justify-between">
-          <h1 className="text-xl font-bold text-gray-900 hidden md:block">
-            SeafoodAI Free MVP Dashboard
-          </h1>
-          <div className="flex justify-between items-center gap-4 w-full md:w-125">
-            <div className="relative flex-1">
-              <Input
-                className="md:w-100 bg-white"
-                type="text"
-                placeholder="Search species, port, quota..."
-              />
-            </div>
-            <Button variant={"outline"} className="shadow-sm">
-              <LuBell />
-              Alerts
-            </Button>
-          </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-lg">
+        <div className="text-center flex flex-col items-center">
+          <img src="./logo_dark.png" alt="logo" className="w-80 pb-5" />
+          {/* <h1 className="text-4xl font-bold text-gray-900 mb-2">Welcome</h1> */}
+          <p className="text-gray-600">
+            Sign in to your account or create a new one
+          </p>
         </div>
-      </header>
 
-      <div className="flex">
-        {/* Sidebar */}
-        <aside className="w-48">
-          <div className="p-4">
-            {/* Terminal Button */}
-            <div className="mb-6">
-              <Button
-                onClick={handleTerminalClick}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md shadow-md transition-colors duration-200 flex items-center gap-2 cursor-pointer"
-              >
-                Terminal
-              </Button>
-            </div>
+        <div className="space-y-4">
+          <Link
+            href="/login"
+            className="w-full flex justify-center py-3 px-4 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          >
+            Login
+          </Link>
 
-            {/* Quota Usage */}
-            <QuotaUsage />
-
-            <div className="space-y-4 md:hidden mt-6">
-              {/* Global Snapshot */}
-              <GlobalSnapshot />
-
-              {/* Market Signals */}
-              <MarketSignals />
-            </div>
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 p-4">
-          <div className="grid grid-cols-3 gap-4">
-            {/* Market Prices */}
-            <MarketPrices />
-
-            {/* Right Column */}
-            <div className="space-y-4 hidden md:block">
-              {/* Global Snapshot */}
-              <GlobalSnapshot />
-              {/* Market Signals - Desktop*/}
-              <MarketSignals />
-            </div>
-            {/* Auctions and Landings */}
-            <Landings />
-          </div>
-        </main>
+          <Link
+            href="/signup"
+            className="w-full flex justify-center py-3 px-4 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors"
+          >
+            Sign Up
+          </Link>
+        </div>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import { getToken } from "@/utils/lib/auth";
 import React, { useEffect, useState } from "react";
 import { FaArrowTrendUp, FaFilter } from "react-icons/fa6";
 
@@ -68,12 +69,21 @@ const Landings = () => {
   // Fetch filter options on mount
   useEffect(() => {
     const fetchFilterOptions = async () => {
+      const token = getToken();
       try {
         // Fetch a large sample to get unique values
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}?page=1&page_size=5000`
+          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}?page=1&page_size=5000`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
         const data: LandingsApiItem = await response.json();
+        console.log("Response", data);
 
         // Extract unique values
         const uniqueYears = [
@@ -102,6 +112,7 @@ const Landings = () => {
   useEffect(() => {
     const fetchLandings = async (pageNumber: number) => {
       try {
+        const token = getToken();
         setLoadingLandings(true);
 
         // Build query string with filters
@@ -113,7 +124,14 @@ const Landings = () => {
           queryParams += `&name=${encodeURIComponent(filters.name)}`;
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}?${queryParams}`
+          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}?${queryParams}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {
@@ -251,7 +269,7 @@ const Landings = () => {
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <FaFilter className="text-xs" />
           Filters

@@ -1,3 +1,4 @@
+import { getToken } from "@/utils/lib/auth";
 import React, { useEffect, useState } from "react";
 import { LuFish } from "react-icons/lu";
 
@@ -14,9 +15,17 @@ const QuotaUsage = () => {
   useEffect(() => {
     const fetchQuotas = async () => {
       try {
+        const token = getToken();
         setLoadingQuotas(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_QUOTAS}`
+          `${process.env.NEXT_PUBLIC_API_URL_QUOTAS}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {

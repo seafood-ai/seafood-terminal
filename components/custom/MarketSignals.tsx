@@ -1,3 +1,4 @@
+import { getToken } from "@/utils/lib/auth";
 import React, { useEffect, useState } from "react";
 
 // Type for market signals API response
@@ -14,9 +15,17 @@ const MarketSignals = () => {
   useEffect(() => {
     const fetchSignals = async () => {
       try {
+        const token = getToken();
         setLoadingSignals(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_SIGNALS}`
+          `${process.env.NEXT_PUBLIC_API_URL_SIGNALS}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { LuCircleDollarSign } from "react-icons/lu";
 import { FaFilter } from "react-icons/fa6";
+import { getToken } from "@/utils/lib/auth";
 
 interface MarketPriceApiData {
   species_sku: string;
@@ -62,9 +63,17 @@ const MarketPrices = () => {
   useEffect(() => {
     const fetchAllMarketPrices = async () => {
       try {
+        const token = getToken();
         setLoadingMarket(true);
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_MARKET_PRICES}?page_size=5000`
+          `${process.env.NEXT_PUBLIC_API_URL_MARKET_PRICES}?page_size=5000`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
         );
 
         if (!response.ok) {
@@ -242,7 +251,7 @@ const MarketPrices = () => {
         </div>
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 transition-colors"
+          className="flex items-center gap-2 px-3 py-1.5 text-sm rounded border border-gray-300 hover:bg-gray-50 transition-colors cursor-pointer"
         >
           <FaFilter className="text-xs" />
           Filters
