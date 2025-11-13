@@ -1,47 +1,17 @@
 "use client";
 
-import { useState, FormEvent, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useState, FormEvent } from "react";
 import Link from "next/link";
-import { api, ApiError } from "../../utils/lib/api";
-import { getToken, setToken } from "../../utils/lib/auth";
 
 export default function Login() {
-  const router = useRouter();
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    const fetchProfile = async () => {
-      const token = getToken();
-      if (token) {
-        router.push("/");
-        return;
-      }
-    };
-
-    fetchProfile();
-  }, [router]);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
-
-    try {
-      const response = await api.login(formData);
-      setToken(response.token);
-      router.push("/");
-    } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-      } else {
-        setError("An unexpected error occurred");
-      }
-    } finally {
-      setLoading(false);
-    }
   };
 
   return (
@@ -54,7 +24,7 @@ export default function Login() {
         <div className="max-w-lg w-full space-y-8 p-8 bg-white rounded-xl">
           <div>
             <h2 className="text-center text-2xl font-bold text-gray-900">
-              Sign in to your account
+              Forgot Password?
             </h2>
           </div>
 
@@ -67,6 +37,13 @@ export default function Login() {
 
             <div className="space-y-4">
               <div>
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-700 mb-4"
+                >
+                  Enter your email address and we will send you instructions to
+                  reset your password.
+                </label>
                 <input
                   id="email"
                   name="email"
@@ -80,40 +57,6 @@ export default function Login() {
                   placeholder="Email"
                 />
               </div>
-
-              <div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  required
-                  value={formData.password}
-                  onChange={(e) =>
-                    setFormData({ ...formData, password: e.target.value })
-                  }
-                  className="mt-1 block w-full px-3 py-3 border border-gray-300 rounded-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500"
-                  placeholder="Password"
-                />
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between text-sm text-gray-700">
-              {/* Remember me checkbox */}
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  className="w-4 h-4 accent-blue-950 border-gray-300 rounded"
-                />
-                <span>Remember me</span>
-              </label>
-
-              {/* Forgot password link */}
-              <a
-                href="/reset"
-                className="text-gray-500 hover:text-gray-600 underline font-medium"
-              >
-                Forgot your password?
-              </a>
             </div>
 
             <button
@@ -121,12 +64,12 @@ export default function Login() {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-sm shadow-sm text-sm font-medium text-white bg-blue-950  focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer"
             >
-              {loading ? "LOGGING IN..." : "LOG IN"}
+              {loading ? "SENDING..." : "SEND RESET INSTRUCTIONS"}
             </button>
 
             <div className="text-center">
-              <Link href="/signup" className="text-sm text-blue-900">
-                Dont have an account? Sign up
+              <Link href="/login" className="text-sm text-blue-900">
+                Remember you password? Sign in
               </Link>
             </div>
           </form>
