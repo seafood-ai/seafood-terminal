@@ -21,6 +21,8 @@ import { Chart } from "react-chartjs-2";
 import TopSpeciesGraph from "@/components/custom/TopSpeciesGraph";
 import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { IoTriangleOutline } from "react-icons/io5";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
 
 ChartJS.register(
   TimeScale,
@@ -101,8 +103,12 @@ const options: ChartOptions<"candlestick"> = {
 };
 
 const Dashboard = () => {
+  const router = useRouter();
   const [activeTimeframe, setActiveTimeframe] = useState("1D");
 
+  const handlerBackClick = () => {
+    router.push("/dashboard");
+  };
   return (
     <div className="min-h-screen bg-[#181818] text-white flex">
       {/* Sidebar */}
@@ -125,6 +131,12 @@ const Dashboard = () => {
         {/* Navigation */}
         <div className="p-2">
           <div>
+            <Button
+              onClick={handlerBackClick}
+              className="w-[90%] bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md shadow-md transition-colors duration-200 flex items-center gap-2 cursor-pointer mb-3 ml-4"
+            >
+              Back
+            </Button>
             <div
               className={
                 "flex items-center justify-between px-3 py-2 text-sm cursor-pointer border-l-2 border-gray-500 ml-4 pl-1"
