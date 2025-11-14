@@ -1,6 +1,13 @@
-import { LoginRequest, SignupRequest, LoginResponse, User } from "../types";
+import {
+  LoginRequest,
+  SignupRequest,
+  LoginResponse,
+  User,
+  ForgotPasswordRequest,
+  ResetPasswordRequest,
+} from "../types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -47,5 +54,28 @@ export const api = {
       },
     });
     return handleResponse<User>(response);
+  },
+
+  // NEW: Forgot password
+  async forgotPassword(
+    data: ForgotPasswordRequest
+  ): Promise<{ message: string }> {
+    const response = await fetch(`${API_URL}/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{ message: string }>(response);
+  },
+
+  async resetPassword(
+    data: ResetPasswordRequest
+  ): Promise<{ message: string }> {
+    const response = await fetch(`${API_URL}/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(data),
+    });
+    return handleResponse<{ message: string }>(response);
   },
 };

@@ -109,7 +109,7 @@ export default function Login() {
 
               {/* Forgot password link */}
               <a
-                href="/reset"
+                href="/forgot-password"
                 className="text-gray-500 hover:text-gray-600 underline font-medium"
               >
                 Forgot your password?
@@ -125,7 +125,10 @@ export default function Login() {
             </button>
 
             <div className="text-center">
-              <Link href="/signup" className="text-sm text-blue-900">
+              <Link
+                href="/signup"
+                className="text-sm text-blue-900 hover:underline"
+              >
                 Dont have an account? Sign up
               </Link>
             </div>

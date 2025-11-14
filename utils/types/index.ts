@@ -24,3 +24,16 @@ export interface LoginResponse {
 export interface ErrorResponse {
   error: string;
 }
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  password: string;
+}
+
+export interface VerifyEmailRequest {
+  token: string;
+}
