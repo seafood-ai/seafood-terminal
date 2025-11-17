@@ -112,10 +112,32 @@ const Landings = () => {
   useEffect(() => {
     const fetchLandings = async (pageNumber: number) => {
       try {
-        const token = getToken();
         setLoadingLandings(true);
 
-        // Build query string with filters
+        // Create a UNIQUE cache key for this page & filters
+        const cacheKey = `landings_cache_${pageNumber}_${filters.year}_${filters.region}_${filters.name}`;
+        const cacheTimeKey = `${cacheKey}_time`;
+
+        const cached = localStorage.getItem(cacheKey);
+        const cacheTime = localStorage.getItem(cacheTimeKey);
+
+        const CACHE_DURATION = 10 * 60 * 1000; // 10 minutes
+
+        // Return cached page only if valid
+        if (
+          cached &&
+          cacheTime &&
+          Date.now() - Number(cacheTime) < CACHE_DURATION
+        ) {
+          setLandings(JSON.parse(cached));
+          setLoadingLandings(false);
+          return;
+        }
+
+        // No valid cache → fetch
+        const token = getToken();
+
+        // Build query string
         let queryParams = `page=${pageNumber}`;
         if (filters.year) queryParams += `&year=${filters.year}`;
         if (filters.region)
@@ -140,44 +162,41 @@ const Landings = () => {
 
         const data: LandingsApiItem = await response.json();
 
-        // Handle null or empty data
-        const processedData: ProcessedLandingData[] =
-          data.data && Array.isArray(data.data)
-            ? data.data.map((item: LandingsApiData): ProcessedLandingData => {
-                const avgPricePerPound =
-                  item.pounds > 0 ? item.dollars / item.pounds : 0;
+        // Process data
+        const processedData: ProcessedLandingData[] = data.data.map((item) => {
+          const avgPrice = item.pounds > 0 ? item.dollars / item.pounds : 0;
 
-                const speciesName = item.nmfs_name
-                  .replace(/\*\*/g, "")
-                  .split(", ")
-                  .reverse()
-                  .join(" ")
-                  .toLowerCase()
-                  .split(" ")
-                  .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-                  .join(" ");
+          const speciesName = item.nmfs_name
+            .replace(/\*\*/g, "")
+            .split(", ")
+            .reverse()
+            .join(" ")
+            .toLowerCase()
+            .replace(/\b\w/g, (c) => c.toUpperCase());
 
-                const displayDate = `${item.year}`;
-
-                return {
-                  species: speciesName,
-                  volume: item.metric_tons.toLocaleString(),
-                  avgPrice: `${avgPricePerPound.toFixed(2)}`,
-                  port: item.region,
-                  date: displayDate,
-                };
-              })
-            : [];
-
-        setLandings({
-          data: processedData,
-          page: data.page || 1,
-          page_size: data.page_size || 0,
-          total_count: data.total_count || 0,
-          total_pages: data.total_pages || 0,
+          return {
+            species: speciesName,
+            volume: item.metric_tons.toLocaleString(),
+            avgPrice: avgPrice.toFixed(2),
+            port: item.region,
+            date: `${item.year}`,
+          };
         });
-        setLandingsError(null);
-      } catch (err: unknown) {
+
+        const final = {
+          data: processedData,
+          page: data.page,
+          page_size: data.page_size,
+          total_count: data.total_count,
+          total_pages: data.total_pages,
+        };
+
+        // Save this SPECIFIC PAGE to cache
+        localStorage.setItem(cacheKey, JSON.stringify(final));
+        localStorage.setItem(cacheTimeKey, Date.now().toString());
+
+        setLandings(final);
+      } catch (err) {
         console.error("Error fetching landings:", err);
         setLandingsError(
           err instanceof Error ? err.message : "An unknown error occurred"

@@ -21,5 +21,9 @@ export default function Home() {
     fetchProfile();
   }, [router]);
 
-  return <div className="bg-white"></div>;
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-white">
+      <div className="text-xl text-gray-600">Loading...</div>
+    </div>
+  );
 }

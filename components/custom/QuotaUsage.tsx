@@ -15,8 +15,28 @@ const QuotaUsage = () => {
   useEffect(() => {
     const fetchQuotas = async () => {
       try {
-        const token = getToken();
         setLoadingQuotas(true);
+
+        // 1. Check localStorage for cached data
+        const cached = localStorage.getItem("quotas_cache");
+        const cacheTime = localStorage.getItem("quotas_cache_time");
+
+        // optional: 10 minutes validity
+        const CACHE_DURATION = 10 * 60 * 1000;
+
+        if (
+          cached &&
+          cacheTime &&
+          Date.now() - Number(cacheTime) < CACHE_DURATION
+        ) {
+          const parsed = JSON.parse(cached);
+          setQuotas(parsed);
+          setLoadingQuotas(false);
+          return;
+        }
+
+        // 2. No cache or cache expired → fetch new data
+        const token = getToken();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL_QUOTAS}`,
           {
@@ -33,7 +53,10 @@ const QuotaUsage = () => {
         }
 
         const data: QuotaApiItem[] = await response.json();
-        console.log(data);
+
+        // 3. Save data into cache for next reload
+        localStorage.setItem("quotas_cache", JSON.stringify(data));
+        localStorage.setItem("quotas_cache_time", Date.now().toString());
 
         setQuotas(data);
         setQuotasError(null);

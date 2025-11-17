@@ -18,7 +18,7 @@ const SideBarElement: React.FC<SbElementProps> = ({
   const [sideToggle, setSideToggle] = useState(true);
   return (
     <div
-      className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer border-l-2 ml-4 pl-1`}
+      className={`flex items-center justify-between px-3 py-2 text-sm cursor-pointer border-l-2 ml-2 pl-1`}
       style={{
         backgroundColor: bgColor,
         borderColor: textColor,

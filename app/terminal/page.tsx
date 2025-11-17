@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import { Search, User, Menu, Circle } from "lucide-react";
+import React, { useEffect, useState } from "react";
 import SideBarElement from "@/components/custom/SideBarElement";
 import {
   Chart as ChartJS,
@@ -23,6 +22,8 @@ import { FaArrowUp, FaArrowDown } from "react-icons/fa";
 import { IoTriangleOutline } from "react-icons/io5";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
+import { getToken, removeToken } from "@/utils/lib/auth";
+import { Input } from "@/components/ui/input";
 
 ChartJS.register(
   TimeScale,
@@ -103,173 +104,172 @@ const options: ChartOptions<"candlestick"> = {
 };
 
 const Dashboard = () => {
-  const router = useRouter();
   const [activeTimeframe, setActiveTimeframe] = useState("1D");
+  const token = getToken();
+  const router = useRouter();
+
+  useEffect(() => {
+    const fetchProfile = async () => {
+      if (!token) {
+        router.push("/login");
+        return;
+      }
+    };
+
+    fetchProfile();
+  }, [router]);
 
   const handlerBackClick = () => {
     router.push("/dashboard");
   };
-  return (
-    <div className="min-h-screen bg-[#181818] text-white flex">
-      {/* Sidebar */}
-      <div className="w-64 bg-[#181818] border-r border-gray-700 hidden md:block">
-        {/* Logo */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-[#035B6A] rounded-md flex items-center justify-center">
-              <h1 className="font-extrabold text-3xl p-0 m-0 pb-2 text-[#00D5FE]">
-                =
-              </h1>
-            </div>
-            <div>
-              <div className="font-semibold">Terminal</div>
-              <div className="font-semibold -mt-2">SeafoodAI</div>
-            </div>
-          </div>
-        </div>
 
-        {/* Navigation */}
-        <div className="p-2">
-          <div>
-            <Button
-              onClick={handlerBackClick}
-              className="w-[90%] bg-gray-600 hover:bg-gray-700 text-white font-medium py-2 px-4 rounded-md shadow-md transition-colors duration-200 flex items-center gap-2 cursor-pointer mb-3 ml-4"
-            >
-              Back
-            </Button>
-            <div
-              className={
-                "flex items-center justify-between px-3 py-2 text-sm cursor-pointer border-l-2 border-gray-500 ml-4 pl-1"
-              }
-            >
-              <div className="flex items-center space-x-0">
-                <span className={"text-gray-400 font-medium pl-2"}>Data</span>
-              </div>
-            </div>
-            <SideBarElement
-              title={"Harvest Operations (CPUE)"}
-              bgColor={"#371C0E"}
-              textColor={"#f5df99"}
-              showArrow={true}
-            />
-            <SideBarElement
-              title={"Regulatory & Compliance (Quota Inputs)"}
-              bgColor={"#092530"}
-              textColor={"#8bcde7"}
-              showArrow={true}
-            />
-            <SideBarElement
-              title={"Processing Plant Data"}
-              bgColor={"#2A0B22"}
-              textColor={"#ceb1c7"}
-            />
-            <SideBarElement
-              title={"Market & Buyer Data"}
-              bgColor={"#133409"}
-              textColor={"#96c289"}
-            />
-            <SideBarElement
-              title={"Traceability Data"}
-              bgColor={"#2A0B22"}
-              textColor={"#ceb1c7"}
-            />
-            <SideBarElement
-              title={"Environmental Conditions"}
-              bgColor={"#092530"}
-              textColor={"#8bcde7"}
-              showArrow={true}
-            />
-            <SideBarElement
-              title={"Quality & Condition Metrics"}
-              bgColor={"#231232"}
-              textColor={"#a48cb9"}
-            />
-            <SideBarElement
-              title={"Economic & Effort Data"}
-              bgColor={"#371C0E"}
-              textColor={"#f5df99"}
-            />
-            <SideBarElement
-              title={"Consumer Engagement Data"}
-              bgColor={"#092530"}
-              textColor={"#8bcde7"}
-              showArrow={true}
-            />
-            <SideBarElement
-              title={"Risk & Compliance"}
-              bgColor={"#360F13"}
-              textColor={"#bd898e"}
-            />
-          </div>
-        </div>
-      </div>
+  const handleLogout = () => {
+    removeToken();
+    router.push("/login");
+  };
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <div className="bg-[#181818] border-b border-gray-700 px-6 py-4">
-          <div className="flex items-center justify-between w-full">
-            <div className="flex items-center space-x-4">
-              <div className="hidden md:block relative w-xl">
-                {/* Search icon */}
-                <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-                  <Search className="h-5 w-5 text-gray-500" />
-                </div>
-
-                {/* Input */}
-                <input
+  if (token) {
+    return (
+      <>
+        <header className="px-6 py-3 sticky top-0 bg-[#181818] shadow-sm shadow-gray-800">
+          <div className="flex items-center justify-center md:justify-between">
+            <h1 className="text-xl font-bold text-gray-200 hidden md:block">
+              SeafoodAI Terminal
+            </h1>
+            <div className="flex justify-between items-center gap-4 w-full md:w-125">
+              <div className="relative flex-1">
+                <Input
+                  className="md:w-100 bg-[#181818] border-gray-700"
                   type="text"
                   placeholder="Symbol Lookup, species, port, vessel ID"
-                  className="pl-10 border-0 bg-[#222222] w-full placeholder:text-lg text-white rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 hover:bg-[#4d4c4c]"
+                />
+              </div>
+              <Button
+                variant={"outline"}
+                className="shadow-sm cursor-pointer bg-red-800 text-gray-200 hover:bg-red-700 hover:text-white border-0"
+                onClick={handleLogout}
+              >
+                Logout
+              </Button>
+            </div>
+          </div>
+        </header>
+
+        <div className="min-h-screen bg-[#181818] text-white flex">
+          {/* Sidebar */}
+          <div className="w-50 bg-[#181818] hidden md:block">
+            {/* Navigation */}
+            <div className="p-2 pr-0">
+              <div className="flex flex-col">
+                <Button
+                  onClick={handlerBackClick}
+                  className="bg-gray-600 hover:bg-gray-700 text-gray-300 font-medium py-2 px-4 rounded-md shadow-md transition-colors duration-200 items-center gap-2 cursor-pointer mb-3 ml-2 mt-2"
+                >
+                  Back
+                </Button>
+                <div
+                  className={
+                    "flex items-center justify-between px-3 py-2 text-sm cursor-pointer border-l-2 border-gray-500 ml-2 pl-1"
+                  }
+                >
+                  <div className="flex items-center space-x-0">
+                    <span className={"text-gray-400 font-medium pl-2"}>
+                      Data
+                    </span>
+                  </div>
+                </div>
+                <SideBarElement
+                  title={"Harvest Operations (CPUE)"}
+                  bgColor={"#371C0E"}
+                  textColor={"#f5df99"}
+                  showArrow={true}
+                />
+                <SideBarElement
+                  title={"Regulatory & Compliance (Quota Inputs)"}
+                  bgColor={"#092530"}
+                  textColor={"#8bcde7"}
+                  showArrow={true}
+                />
+                <SideBarElement
+                  title={"Processing Plant Data"}
+                  bgColor={"#2A0B22"}
+                  textColor={"#ceb1c7"}
+                />
+                <SideBarElement
+                  title={"Market & Buyer Data"}
+                  bgColor={"#133409"}
+                  textColor={"#96c289"}
+                />
+                <SideBarElement
+                  title={"Traceability Data"}
+                  bgColor={"#2A0B22"}
+                  textColor={"#ceb1c7"}
+                />
+                <SideBarElement
+                  title={"Environmental Conditions"}
+                  bgColor={"#092530"}
+                  textColor={"#8bcde7"}
+                  showArrow={true}
+                />
+                <SideBarElement
+                  title={"Quality & Condition Metrics"}
+                  bgColor={"#231232"}
+                  textColor={"#a48cb9"}
+                />
+                <SideBarElement
+                  title={"Economic & Effort Data"}
+                  bgColor={"#371C0E"}
+                  textColor={"#f5df99"}
+                />
+                <SideBarElement
+                  title={"Consumer Engagement Data"}
+                  bgColor={"#092530"}
+                  textColor={"#8bcde7"}
+                  showArrow={true}
+                />
+                <SideBarElement
+                  title={"Risk & Compliance"}
+                  bgColor={"#360F13"}
+                  textColor={"#bd898e"}
                 />
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <div className="bg-[#222222] p-2 rounded-sm cursor-pointer hover:bg-gray-700">
-                <User size={19} />
-              </div>
-              <div className="bg-[#222222] p-2 rounded-sm cursor-pointer hover:bg-gray-700">
-                <Circle size={19} />
-              </div>
-              <div className="bg-[#222222] p-2 rounded-sm cursor-pointer hover:bg-gray-700">
-                <Menu size={19} />
-              </div>
-            </div>
           </div>
-        </div>
 
-        {/* Dashboard Content */}
-        <div className="flex-1 p-6">
-          <div className="flex md:grid md:grid-cols-4 gap-6">
-            {/* Main Chart Section */}
-            <div className="col-span-3">
-              <div className="bg-[#181818] rounded-lg p-6">
-                <div className="flex justify-between items-start mb-6">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">
-                      Harvest Operations (CPUE)
-                    </h2>
-                  </div>
-                  <div className="flex space-x-2">
-                    {["1D", "1W", "1M", "1Y", "Max"].map((timeframe) => (
-                      <button
-                        key={timeframe}
-                        onClick={() => setActiveTimeframe(timeframe)}
-                        className={`px-3 py-1 rounded text-sm ${
-                          activeTimeframe === timeframe
-                            ? "bg-[#113949] text-[#80a9b9]"
-                            : "bg-[#2e2d2d] text-gray-300 hover:bg-gray-600"
-                        }`}
-                      >
-                        {timeframe}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+          {/* Main Content */}
+          <div className="flex-1 flex flex-col">
+            {/* Dashboard Content */}
+            <div className="flex-1 px-6 py-4">
+              <div className="flex md:grid md:grid-cols-4 gap-6">
+                {/* Main Chart Section */}
+                <div className="col-span-3">
+                  <div className="bg-[#181818] rounded-lg p-6 border-1 border-gray-700">
+                    <div className="flex justify-between items-start mb-6">
+                      <div>
+                        <h2 className="text-xl font-semibold mb-2">
+                          Harvest Operations (CPUE)
+                        </h2>
+                      </div>
+                      <div className="flex space-x-2">
+                        {["1D", "1W", "1M", "1Y", "Max"].map((timeframe) => (
+                          <button
+                            key={timeframe}
+                            onClick={() => setActiveTimeframe(timeframe)}
+                            className={`px-3 py-1 rounded text-sm ${
+                              activeTimeframe === timeframe
+                                ? "bg-[#113949] text-[#80a9b9]"
+                                : "bg-[#2e2d2d] text-gray-300 hover:bg-gray-600"
+                            }`}
+                          >
+                            {timeframe}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
 
-                {/* Chart */}
-                <div className="h-80">
-                  {/* <ResponsiveContainer width="100%" height="100%">
+                    {/* Chart */}
+                    <div className="h-80">
+                      {/* <ResponsiveContainer width="100%" height="100%">
                     <AreaChart data={cpueData}>
                       <defs>
                         <linearGradient
@@ -320,184 +320,193 @@ const Dashboard = () => {
                     </AreaChart>
                   </ResponsiveContainer> */}
 
-                  <Chart type="candlestick" data={data} options={options} />
-                </div>
+                      <Chart type="candlestick" data={data} options={options} />
+                    </div>
 
-                {/* Species Movers Table */}
-                <div className="mt-8 bg-[#222222] p-5 rounded-lg">
-                  <h3 className="text-lg font-semibold mb-4">
-                    Top Species Movers
-                  </h3>
-                  <div className="grid grid-cols-2 gap-6">
-                    <div className="bg-[#222222] rounded p-0">
-                      <div className="flex">
-                        <div>
-                          <div className="text-sm text-gray-400 mb-2">Apr</div>
-                          <div className="text-green-400 text-lg font-semibold">
-                            +3.0%
+                    {/* Species Movers Table */}
+                    <div className="mt-8 bg-[#222222] p-5 rounded-lg">
+                      <h3 className="text-lg font-semibold mb-4">
+                        Top Species Movers
+                      </h3>
+                      <div className="grid grid-cols-2 gap-6">
+                        <div className="bg-[#222222] rounded p-0">
+                          <div className="flex">
+                            <div>
+                              <div className="text-sm text-gray-400 mb-2">
+                                Apr
+                              </div>
+                              <div className="text-green-400 text-lg font-semibold">
+                                +3.0%
+                              </div>
+                            </div>
+                            <div className="w-full h-15 ml-4">
+                              <TopSpeciesGraph />
+                            </div>
+                          </div>
+                          <div className="h-[1px] max-w-full bg-gray-400 ml-3 mt-1 mr-1"></div>
+                          <div className="flex justify-between mt-2 mx-4 text-lg">
+                            <div>55,48</div>
+                            <div>$5,48</div>
+                            <div>PDX</div>
                           </div>
                         </div>
-                        <div className="w-full h-15 ml-4">
-                          <TopSpeciesGraph />
-                        </div>
-                      </div>
-                      <div className="h-[1px] max-w-full bg-gray-400 ml-3 mt-1 mr-1"></div>
-                      <div className="flex justify-between mt-2 mx-4 text-lg">
-                        <div>55,48</div>
-                        <div>$5,48</div>
-                        <div>PDX</div>
-                      </div>
-                    </div>
 
-                    <div className="space-y-2 bg-[#222222] -mt-2">
-                      <div className="font-semibold text-lg pl-4">
-                        Top Species Movers
-                      </div>
-                      <div className="flex justify-between mt-2 mx-4 text-lg">
-                        <div className="flex space-x-7">
-                          <div className="text-blue-400">A</div>
-                          <div className="text-blue-400">8,52</div>
+                        <div className="space-y-2 bg-[#222222] -mt-2">
+                          <div className="font-semibold text-lg pl-4">
+                            Top Species Movers
+                          </div>
+                          <div className="flex justify-between mt-2 mx-4 text-lg">
+                            <div className="flex space-x-7">
+                              <div className="text-blue-400">A</div>
+                              <div className="text-blue-400">8,52</div>
+                            </div>
+                            <div className="text-green-600">SAV</div>
+                          </div>
+                          <div className="h-[1px] max-w-full bg-gray-400 ml-3 mt-1 mr-1"></div>
+                          <div className="flex justify-between mt-2 mx-4 text-lg">
+                            <div className="flex space-x-7">
+                              <div className="text-green-600">H</div>
+                              <div className="text-blue-400">3,49</div>
+                            </div>
+                            <div className="text-blue-400">SEA</div>
+                          </div>
                         </div>
-                        <div className="text-green-600">SAV</div>
-                      </div>
-                      <div className="h-[1px] max-w-full bg-gray-400 ml-3 mt-1 mr-1"></div>
-                      <div className="flex justify-between mt-2 mx-4 text-lg">
-                        <div className="flex space-x-7">
-                          <div className="text-green-600">H</div>
-                          <div className="text-blue-400">3,49</div>
-                        </div>
-                        <div className="text-blue-400">SEA</div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
 
-            {/* Right Sidebar */}
-            <div className="space-y-6 hidden md:block">
-              {/* Key Metrics */}
-              <div className="bg-[#181818] rounded-lg p-4">
-                <h3 className="font-semibold mb-4">Key Metrics</h3>
-                <div className="space-y-3">
-                  <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span>Current CPUE</span>
-                      <span className="font-semibold">121.5</span>
-                    </div>
-                    <div className="bg-gray-700 mt-2 rounded-full">
-                      <div
-                        style={{
-                          height: "3px",
-                          width: "100%",
-                          backgroundColor: "#3480d8",
-                        }}
-                        className="rounded-full"
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span>Quota Usage %</span>
-                      <span className="font-semibold">72%</span>
-                    </div>
-                    <div className="bg-gray-700 mt-2 rounded-full">
-                      <div
-                        style={{
-                          height: "3px",
-                          width: "72%",
-                          backgroundColor: "#10B981",
-                        }}
-                        className="rounded-full"
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex justify-between">
-                      <span>Landing Volume MT</span>
-                      <span className="font-semibold">8,52</span>
-                    </div>
-                    <div className="bg-gray-700 mt-2 rounded-full">
-                      <div
-                        style={{
-                          height: "3px",
-                          width: "60%",
-                          backgroundColor: "#10B981",
-                        }}
-                        className="rounded-full"
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Market Price $/lb</span>
-                    <span className="font-semibold">3,68</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Top Species Movers */}
-              <div className="bg-[#181818] rounded-lg p-4">
-                <h3 className="font-semibold mb-4">Top Species Movers</h3>
-                <div className="space-y-3">
-                  <div className="flex flex-col">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FaArrowUp className="text-green-400" size={16} />
-                        <span className="text-green-400">3,7%</span>
+                {/* Right Sidebar */}
+                <div className="space-y-6 hidden md:block">
+                  {/* Key Metrics */}
+                  <div className="bg-[#181818] rounded-lg p-4 border-1 border-gray-700">
+                    <h3 className="font-semibold mb-4">Key Metrics</h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col">
+                        <div className="flex justify-between">
+                          <span>Current CPUE</span>
+                          <span className="font-semibold">121.5</span>
+                        </div>
+                        <div className="bg-gray-700 mt-2 rounded-full">
+                          <div
+                            style={{
+                              height: "3px",
+                              width: "100%",
+                              backgroundColor: "#3480d8",
+                            }}
+                            className="rounded-full"
+                          ></div>
+                        </div>
                       </div>
-                      <span className="text-gray-400">SVIS</span>
-                    </div>
-                    <div className="bg-gray-700 mt-2 rounded-full">
-                      <div
-                        style={{
-                          height: "3px",
-                          width: "80%",
-                          backgroundColor: "#10B981",
-                        }}
-                        className="rounded-full"
-                      ></div>
-                    </div>
-                  </div>
-                  <div className="flex flex-col">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-2">
-                        <FaArrowDown className="text-red-400" size={16} />
-                        <span className="text-red-400">-2,8%</span>
+                      <div className="flex flex-col">
+                        <div className="flex justify-between">
+                          <span>Quota Usage %</span>
+                          <span className="font-semibold">72%</span>
+                        </div>
+                        <div className="bg-gray-700 mt-2 rounded-full">
+                          <div
+                            style={{
+                              height: "3px",
+                              width: "72%",
+                              backgroundColor: "#10B981",
+                            }}
+                            className="rounded-full"
+                          ></div>
+                        </div>
                       </div>
-                      <span className="text-gray-400">STA</span>
-                    </div>
-                    <div className="bg-gray-700 mt-2 rounded-full">
-                      <div
-                        style={{
-                          height: "3px",
-                          width: "70%",
-                        }}
-                        className="rounded-full bg-red-400"
-                      ></div>
+                      <div className="flex flex-col">
+                        <div className="flex justify-between">
+                          <span>Landing Volume MT</span>
+                          <span className="font-semibold">8,52</span>
+                        </div>
+                        <div className="bg-gray-700 mt-2 rounded-full">
+                          <div
+                            style={{
+                              height: "3px",
+                              width: "60%",
+                              backgroundColor: "#10B981",
+                            }}
+                            className="rounded-full"
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>Market Price $/lb</span>
+                        <span className="font-semibold">3,68</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
 
-              {/* Risk & Compliance Data */}
-              <div className="bg-[#181818] rounded-lg p-4">
-                <h3 className="font-semibold mb-4">Risk & Compliance Data</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-2">
-                      <IoTriangleOutline className="text-red-400" size={16} />
-                      <span className="text-red-400">0,8%</span>
+                  {/* Top Species Movers */}
+                  <div className="bg-[#181818] rounded-lg p-4 border-1 border-gray-700">
+                    <h3 className="font-semibold mb-4">Top Species Movers</h3>
+                    <div className="space-y-3">
+                      <div className="flex flex-col">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <FaArrowUp className="text-green-400" size={16} />
+                            <span className="text-green-400">3,7%</span>
+                          </div>
+                          <span className="text-gray-400">SVIS</span>
+                        </div>
+                        <div className="bg-gray-700 mt-2 rounded-full">
+                          <div
+                            style={{
+                              height: "3px",
+                              width: "80%",
+                              backgroundColor: "#10B981",
+                            }}
+                            className="rounded-full"
+                          ></div>
+                        </div>
+                      </div>
+                      <div className="flex flex-col">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <FaArrowDown className="text-red-400" size={16} />
+                            <span className="text-red-400">-2,8%</span>
+                          </div>
+                          <span className="text-gray-400">STA</span>
+                        </div>
+                        <div className="bg-gray-700 mt-2 rounded-full">
+                          <div
+                            style={{
+                              height: "3px",
+                              width: "70%",
+                            }}
+                            className="rounded-full bg-red-400"
+                          ></div>
+                        </div>
+                      </div>
                     </div>
-                    <span className="text-gray-400">JNU</span>
+                  </div>
+
+                  {/* Risk & Compliance Data */}
+                  <div className="bg-[#181818] rounded-lg p-4 border-1 border-gray-700">
+                    <h3 className="font-semibold mb-4">
+                      Risk & Compliance Data
+                    </h3>
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2">
+                          <IoTriangleOutline
+                            className="text-red-400"
+                            size={16}
+                          />
+                          <span className="text-red-400">0,8%</span>
+                        </div>
+                        <span className="text-gray-400">JNU</span>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </div>
-  );
+      </>
+    );
+  }
 };
 
 export default Dashboard;

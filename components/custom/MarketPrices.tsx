@@ -63,8 +63,42 @@ const MarketPrices = () => {
   useEffect(() => {
     const fetchAllMarketPrices = async () => {
       try {
-        const token = getToken();
         setLoadingMarket(true);
+
+        // 1. Check localStorage for cached data
+        const cached = localStorage.getItem("market_prices_cache");
+        const cacheTime = localStorage.getItem("market_prices_cache_time");
+
+        // optional: 10 minutes validity
+        const CACHE_DURATION = 10 * 60 * 1000;
+
+        if (
+          cached &&
+          cacheTime &&
+          Date.now() - Number(cacheTime) < CACHE_DURATION
+        ) {
+          const parsed: ProcessedMarketPriceData[] = JSON.parse(cached);
+          setAllData(parsed);
+          // Extract unique filter options
+          if (parsed.length > 0) {
+            const uniqueSpecies = [
+              ...new Set(parsed.map((item) => item.species_sku)),
+            ].sort();
+            const uniqueRegions = [
+              ...new Set(parsed.map((item) => item.origin)),
+            ].sort();
+
+            setFilterOptions({
+              species: uniqueSpecies,
+              regions: uniqueRegions,
+            });
+          }
+          setLoadingMarket(false);
+          return;
+        }
+
+        // 2. No cache or cache expired → fetch new data
+        const token = getToken();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL_MARKET_PRICES}?page_size=5000`,
           {
@@ -95,6 +129,13 @@ const MarketPrices = () => {
                 })
               )
             : [];
+
+        // 3. Save data into cache for next reload
+        localStorage.setItem(
+          "market_prices_cache",
+          JSON.stringify(processedData)
+        );
+        localStorage.setItem("market_prices_cache_time", Date.now().toString());
 
         setAllData(processedData);
 

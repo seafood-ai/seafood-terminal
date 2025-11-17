@@ -15,8 +15,28 @@ const MarketSignals = () => {
   useEffect(() => {
     const fetchSignals = async () => {
       try {
-        const token = getToken();
         setLoadingSignals(true);
+
+        // 1. Check localStorage for cached data
+        const cached = localStorage.getItem("market_signals_cache");
+        const cacheTime = localStorage.getItem("market_signals_cache_time");
+
+        // optional: 10 minutes validity
+        const CACHE_DURATION = 10 * 60 * 1000;
+
+        if (
+          cached &&
+          cacheTime &&
+          Date.now() - Number(cacheTime) < CACHE_DURATION
+        ) {
+          const parsed = JSON.parse(cached);
+          setSignals(parsed);
+          setLoadingSignals(false);
+          return;
+        }
+
+        // 2. No cache or cache expired → fetch new data
+        const token = getToken();
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL_SIGNALS}`,
           {
@@ -33,7 +53,13 @@ const MarketSignals = () => {
         }
 
         const data: SignalsApiItem[] = await response.json();
-        console.log(data);
+
+        // 3. Save data into cache for next reload
+        localStorage.setItem("market_signals_cache", JSON.stringify(data));
+        localStorage.setItem(
+          "market_signals_cache_time",
+          Date.now().toString()
+        );
 
         setSignals(data);
         setSignalsError(null);
