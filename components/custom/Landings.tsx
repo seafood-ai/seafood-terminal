@@ -146,7 +146,7 @@ const Landings = () => {
           queryParams += `&name=${encodeURIComponent(filters.name)}`;
 
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_LANDINGS}?${queryParams}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/landings?${queryParams}`,
           {
             method: "GET",
             headers: {

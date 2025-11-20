@@ -38,7 +38,7 @@ const MarketSignals = () => {
         // 2. No cache or cache expired → fetch new data
         const token = getToken();
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_SIGNALS}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/market-signals`,
           {
             method: "GET",
             headers: {

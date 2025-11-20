@@ -100,7 +100,7 @@ const MarketPrices = () => {
         // 2. No cache or cache expired → fetch new data
         const token = getToken();
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_MARKET_PRICES}?page_size=5000`,
+          `${process.env.NEXT_PUBLIC_API_URL}/market-prices?page_size=5000`,
           {
             method: "GET",
             headers: {

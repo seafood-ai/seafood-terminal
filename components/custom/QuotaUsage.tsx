@@ -38,7 +38,7 @@ const QuotaUsage = () => {
         // 2. No cache or cache expired → fetch new data
         const token = getToken();
         const response = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL_QUOTAS}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/quotas`,
           {
             method: "GET",
             headers: {
